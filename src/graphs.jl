@@ -3,10 +3,11 @@ using DataFrames
 using CSV
 using Statistics
 
-file_path = "../data/data.csv"
+const DATA_PATH = "../data/data.csv"
+const THETAS_FILE = "thetas.csv"
 
 # km, price
-data = CSV.read(file_path, DataFrame)
+data = CSV.read(DATA_PATH, DataFrame)
 
 x_mean = mean(data.km)
 x_std = std(data.km)
@@ -62,6 +63,15 @@ normalized_km = (raw_km - x_mean) / x_std
 prediction = estimate_price(normalized_km, theta_0, theta_1)
 
 println("Estimated price for $raw_km km: $prediction")
+
+results = DataFrame(
+    theta_0 = theta_0,
+    theta_1 = theta_1,
+    mu = x_mean,
+    signma = x_std
+)
+
+CSV.write(THETAS_FILE, results)
 
 ##############
 #   VISUALS  #
