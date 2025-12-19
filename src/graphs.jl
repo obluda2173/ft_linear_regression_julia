@@ -1,90 +1,71 @@
-using Plots
-using DataFrames
 using CSV
+using DataFrames
 using Statistics
+using Plots
 
+# constants
 const DATA_PATH = "../data/data.csv"
-const THETAS_FILE = "thetas.csv"
-
-# km, price
-data = CSV.read(DATA_PATH, DataFrame)
-
-x_mean = mean(data.km)
-x_std = std(data.km)
-x_norm = (data.km .- x_mean) ./ x_std
-y = data.price
+const MODEL_FILE = "thetas.csv"
 
 
-theta_0 = 0.0
-theta_1 = 0.0
-lr = 0.0001
+estimate_price(mileage, t0, t1) = muladd(mileage, t1, t0)
 
-
-function estimate_price(mileage, t0, t1)
-    return mileage * t1 + t0
-end
-
-function calculate_theta_0(data_x, data_y, t0, t1)
-    sum = 0.0
-    m = length(data_x)
-
-    for i in 1:m
-        sum += estimate_price(data_x[i], t0, t1) - data_y[i]
-    end
-
-    return 1/m * sum
-end
-
-function calculate_theta_1(data_x, data_y, t0, t1)
-    sum = 0.0
-    m = length(data_x)
-
-    for i in 1:m
-        sum += (estimate_price(data_x[i], t0, t1) - data_y[i]) * data_x[i]
-    end
-
-    return 1/m * sum
-end
-
-for i in 1:1000000
-    grad_0 = calculate_theta_0(x_norm, y, theta_0, theta_1)
-    grad_1 = calculate_theta_1(x_norm, y, theta_0, theta_1)
-
-    global theta_0 -= lr * grad_0
-    global theta_1 -= lr * grad_1
-end
-
-println("Final Normalized theta_0: $theta_0")
-println("Final Normalized theta_1: $theta_1")
-
-raw_km = 82029
-normalized_km = (raw_km - x_mean) / x_std
-
-prediction = estimate_price(normalized_km, theta_0, theta_1)
-
-println("Estimated price for $raw_km km: $prediction")
-
-results = DataFrame(
-    theta_0 = theta_0,
-    theta_1 = theta_1,
-    mu = x_mean,
-    signma = x_std
+function compute_gradients(x, y, t0, t1)
+    m = length(x
 )
+    sum_diff_0 = 0.0
+    sum_diff_1 = 0.0
 
-CSV.write(THETAS_FILE, results)
+    @simd for i in 1:m
+        prediction = estimate_price(x[1], t0, t1)
+        error = prediction - y[1]
 
-##############
-#   VISUALS  #
-##############
+        sum_diff_0 += error
+        sum_diff_1 += error * x[i]
+    end
 
-# println(data)
+    grad_0 = sum_diff_0 / m
+    grad_1 = sum_diff_1 / m
 
-# mileage = plot(
-#     xlabel="mileage (km)",
-#     ylabel="cost (shekels)",
-#     data.km,
-#     data.price,
-#     seriestype=:scatter
-# )
+    return grad_0, grad_1
+end
 
-# savefig(mileage, "mileage_plot.png")
+function train_model(x, y, lr = 0.01, epochs = 10000)
+    t0 = 0.0
+    t1 = 0.0
+
+    for i in epochs
+        grad_0, grad_1 = compute_gradients(x, y, t0, t1)
+        t0 -= lr * grad_0
+        t1 -= lr * grad_1
+    end
+
+    return t0, t1
+end
+
+function main()
+    if !isfile(DATA_PATH)
+        error("File not found: $DATA_PATH")
+    end
+    df = CSV.read(DATA_PATH, DataFrame)
+
+    # noramlisaiion
+    x_mean = mean(df.km)
+    x_std = std(df.km)
+    x_norm = (df.km .- x_mean) ./ x_std
+    y = df.price
+
+    theta_0, theta_1 = train_model(x_norm, y, 0.1, 10000)
+
+    # save results
+    results = DataFrame(
+        theta_0 = theta_0,
+        theta_1 = theta_1,
+        mu = x_mean,
+        sigma = x_std
+    )
+    CSV.write(MODEL_FILE, results)
+    println("Model saved to $MODEL_FILE")
+end
+
+main()
