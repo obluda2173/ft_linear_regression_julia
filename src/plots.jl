@@ -1,6 +1,7 @@
 using CSV
 using DataFrames
 using Plots
+using Statistics
 
 
 const DATA_PATH = "../data/data.csv"
@@ -22,6 +23,16 @@ function f(x_raw)
     return x_norm * theta_1 + theta_0
 end
 
+function plot_bfl(data, plt)
+    x = data.km
+    y = data.price
+
+    b = cov(x, y) / var(x)
+
+    c = mean(y) - b * mean(x)
+    plt = plot!(x -> b*x + c, minimum(x), maximum(x), label="Exact Fit")
+end
+
 function main()
     if !isfile(DATA_PATH)
         error("File not found: $DATA_PATH")
@@ -37,6 +48,8 @@ function main()
     plt = plot!(f, minimum(data.km):maximum(data.km),
                 label="prediction line",
                 linewidth=2)
+
+    plot_bfl(data, plt)
 
     savefig("../plots/km_vs_price.png")
 end
