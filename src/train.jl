@@ -1,7 +1,6 @@
 using CSV
 using DataFrames
 using Statistics
-using Plots
 
 # constants
 const DATA_PATH = "../data/data.csv"
