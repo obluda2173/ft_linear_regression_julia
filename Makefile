@@ -1,67 +1,47 @@
-CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror
+JULIA := julia
+JFLAGS := --project=.
 
-SRC_DIR := src/cpp
-SRC_PY := src/python
+SRC_DIR := src
 DATA_DIR := data
-BUILD_DIR := bin
+MODEL_DIR := models
 
-TRAIN_SRC := $(SRC_DIR)/train.cpp
-PREDICT_SRC := $(SRC_DIR)/predict.cpp
-PRECISION_SRC := $(SRC_DIR)/precision.cpp
-UTILS_SRC := $(SRC_DIR)/utils.cpp
-BGD_SRC := $(SRC_DIR)/bgd.cpp
-GRAPH_SRC := $(SRC_PY)/graph.py
+MODEL_FILE := $(MODEL_DIR)/thetas.csv
 
-TRAIN_BIN := $(BUILD_DIR)/train
-PREDICT_BIN := $(BUILD_DIR)/predict
-PRECISION_BIN := $(BUILD_DIR)/precision
+TRAIN_SRC := $(SRC_DIR)/train.jl
+PREDICT_SRC := $(SRC_DIR)/predict.jl
+METRICS_SRC := $(SRC_DIR)/metrics.jl
+PLOTS_SRC := $(SRC_DIR)/plots.jl
 
 RED   := \033[1;31m
 GREEN := \033[1;32m
 BLUE  := \033[1;34m
 RESET := \033[0m
 
-all: $(TRAIN_BIN) $(PREDICT_BIN) $(PRECISION_BIN)
-	@echo "$(GREEN)✔ Build complete$(RESET)"
+all: train predict metrics
+	@echo "$(GREEN)✔ All tasks completed$(RESET)"
 
 re: clean all
 
-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
+setup:
+	@$(JULIA) $(JFLAGS) -e 'using Pkg; Pkg.instantiate()'
+	@echo "$(GREEN)✔ Dependencies installed$(RESET)"
 
-$(TRAIN_BIN): $(TRAIN_SRC) $(BGD_SRC) $(UTILS_SRC) | $(BUILD_DIR)
-	@$(CXX) $(CXXFLAGS) $^ -o $@
-	@echo "$(BLUE)✔ train built$(RESET)"
+train:
+	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) train.jl
+	@echo "$(BLUE)✔ Model trained$(RESET)"
 
-$(PREDICT_BIN): $(PREDICT_SRC) $(UTILS_SRC) $(BGD_SRC) | $(BUILD_DIR)
-	@$(CXX) $(CXXFLAGS) $^ -o $@
-	@echo "$(BLUE)✔ predict built$(RESET)"
+predict:
+	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) predict.jl
 
-$(PRECISION_BIN): $(PRECISION_SRC) $(BGD_SRC) $(UTILS_SRC) | $(BUILD_DIR)
-	@$(CXX) $(CXXFLAGS) $^ -o $@
-	@echo "$(BLUE)✔ precision built$(RESET)"
+metrics:
+	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) metrics.jl
 
-run: train predict
-
-train: $(TRAIN_BIN)
-	@cd $(SRC_DIR) && ../../$(TRAIN_BIN)
-
-predict: $(PREDICT_BIN)
-	@cd $(SRC_DIR) && ../../$(PREDICT_BIN)
-
-graph: $(GRAPH_SRC) train
-	@cd $(SRC_PY) && python3 graph.py
+graph:
+	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) plots.jl
 	@echo "$(BLUE)✔ Graph generated$(RESET)"
 
-precision: $(PRECISION_BIN) train
-	@cd $(SRC_DIR) && ../../$(PRECISION_BIN)
-
-%.o: %.cpp
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
-
 clean:
-	@rm -fr $(BUILD_DIR) $(DATA_DIR)/model.json $(DATA_DIR)/loss.csv
+	@rm -f $(MODEL_FILE)
 	@echo "$(RED)✔ Cleaned$(RESET)"
 
-.PHONY: all clean train predict graph precision
+.PHONY: all re setup train predict precision graph clean
