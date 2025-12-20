@@ -2,18 +2,24 @@ using CSV
 using DataFrames
 using Plots
 
+
 const DATA_PATH = "../data/data.csv"
 const MODEL_FILE = "thetas.csv"
 
+if !isfile(MODEL_FILE)
+    error("File not found: $MODEL_FILE")
+end
+model = CSV.read(MODEL_FILE, DataFrame)
+
+const mu = model.mu[1]
+const sigma = model.sigma[1]
+const theta_0 = model.theta_0[1]
+const theta_1 = model.theta_1[1]
+
+
 function f(x_raw)
-    if !isfile(MODEL_FILE)
-        error("File not found: $MODEL_FILE")
-    end
-    model = CSV.read(MODEL_FILE, DataFrame)
-
-    x_norm = (x_raw - model.mu[1]) / model.sigma[1]
-
-    return x_norm * model.theta_1[1] + model.theta_0[1]
+    x_norm = (x_raw - mu) / sigma
+    return x_norm * theta_1 + theta_0
 end
 
 function main()
