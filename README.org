@@ -2,7 +2,118 @@
 #+author: Erik An
 #+email: obluda2173@gmail.com
 #+date: <2025-12-20>
-#+lastmod: <2025-12-20 17:39>
+#+lastmod: <2025-12-20 17:44>
 #+options: num:t
 #+startup: overview
 
+A robust implementation of univariate Linear Regression in Julia. This project predicts car prices based on mileage using Gradient Descent. It features a clean, modular architecture with strict separation of concerns between data, logic, and configuration.
+
+* 📌 Overview
+This project solves the classic linear regression problem: finding the optimal line $\theta_0 + (\theta_1 \times \text{km})$ to minimize the error between predicted and actual car prices.
+
+**Key Features:**
+- *Vectorized Implementation:* Efficient mathematical operations using Julia.
+- *Environment Management:* Uses ~Project.toml~ for reproducible dependency tracking.
+- *Configurable:* Centralized configuration for paths and hyperparameters.
+- *Automated Pipeline:* Full support for ~make~ commands to train, predict, and visualize.
+
+* 🛠️ Prerequisites
+- *Julia:* v1.6 or higher (tested on v1.10)
+- *Make:* (Optional) For running automation commands.
+
+* 🚀 Installation & Setup
+** 1. Clone the repository
+#+begin_src bash
+git clone https://github.com/your-username/ft_linear_regression_julia.git
+cd ft_linear_regression_julia
+#+end_src
+
+** 2. Instantiate the Environment
+This project uses ~Project.toml~ to track packages (~CSV~, ~DataFrames~, ~Plots~). You can install them automatically:
+
+#+begin_src bash
+make setup
+#+end_src
+
+/Alternatively, manually in Julia:/
+#+begin_src bash
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+#+end_src
+
+* 💻 Usage
+This project uses a ~Makefile~ to manage the workflow. You can run individual steps or the full pipeline.
+
+** Training the Model
+Calculates the optimal $\theta_0$ (intercept) and $\theta_1$ (slope) using Gradient Descent and saves them to ~models/thetas.csv~.
+#+begin_src bash
+make train
+#+end_src
+
+** Making Predictions
+Loads the trained model and prompts the user for a mileage (km) input to predict the price.
+#+begin_src bash
+make predict
+#+end_src
+
+** Visualizing Results
+Generates a scatter plot of the dataset with the regression line overlaid.
+- *Output:* ~plots/km_vs_price.png~
+#+begin_src bash
+make graph
+#+end_src
+
+** Precision Metrics
+Calculates the accuracy of the model (e.g., Mean Squared Error or $R^2$ score).
+#+begin_src bash
+make metrics
+#+end_src
+
+** Cleanup
+Removes generated artifacts (models and plots) to reset the project.
+#+begin_src bash
+make clean
+#+end_src
+
+* 🧮 Theoretical Background
+
+The model minimizes the *Mean Squared Error (MSE)* cost function:
+
+$$J(\theta_0, \theta_1) = \frac{1}{2m} \sum_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)})^2$$
+
+Where the hypothesis $h_\theta(x)$ is given by:
+
+$$h_\theta(x) = \theta_0 + (\theta_1 \cdot x)$$
+
+The parameters are updated using *Gradient Descent*:
+
+$$\theta_j := \theta_j - \alpha \frac{\partial}{\partial \theta_j} J(\theta_0, \theta_1)$$
+
+Where $\alpha$ is the learning rate.
+
+* 📂 Project Structure
+
+#+begin_example
+.
+├── data/
+│   └── data.csv          # Raw training data (km, price)
+├── models/
+│   └── thetas.csv        # Generated model parameters (ignored by git)
+├── plots/
+│   └── km_vs_price.png   # Generated visualization
+├── src/
+│   ├── config.jl         # Centralized paths and constants
+│   ├── metrics.jl        # Precision/accuracy calculations
+│   ├── plots.jl          # Plotting script
+│   ├── predict.jl        # Prediction script (CLI)
+│   └── train.jl          # Training script (Gradient Descent)
+├── Makefile              # Task runner
+├── Project.toml          # Julia dependencies
+└── README.org
+#+end_example
+
+* ⚙️ Configuration
+You can adjust global constants in ~src/config.jl~:
+
+- *Learning Rate:* Adjust for faster/stabler convergence.
+- *Iterations:* Number of training epochs.
+- *File Paths:* Locations of input data and output models.
