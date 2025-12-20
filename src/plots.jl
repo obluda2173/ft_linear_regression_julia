@@ -3,9 +3,8 @@ using DataFrames
 using Plots
 using Statistics
 
-
-const DATA_PATH = "../data/data.csv"
-const MODEL_FILE = "thetas.csv"
+include("config.jl")
+using .Config
 
 if !isfile(MODEL_FILE)
     error("File not found: $MODEL_FILE")

@@ -2,10 +2,8 @@ using CSV
 using DataFrames
 using Statistics
 
-# constants
-const DATA_PATH = "../data/data.csv"
-const MODEL_FILE = "thetas.csv"
-
+include("config.jl")
+using .Config
 
 estimate_price(mileage, t0, t1) = muladd(mileage, t1, t0)
 

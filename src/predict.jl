@@ -1,7 +1,8 @@
 using CSV
 using DataFrames
 
-const MODEL_FILE = "thetas.csv"
+include("config.jl")
+using .Config
 
 estimate_price(mileage, t0, t1) = muladd(mileage, t1, t0)
 
