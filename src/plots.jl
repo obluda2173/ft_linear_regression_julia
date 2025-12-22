@@ -44,6 +44,8 @@ function main()
                ylabel="price",
                seriestype=:scatter)
 
+    savefig("../plots/km_vs_price_scatter.png")
+
     plt = plot!(f, minimum(data.km):maximum(data.km),
                 label="prediction line",
                 linewidth=2)

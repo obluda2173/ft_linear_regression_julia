@@ -2,7 +2,7 @@
 #+author: Erik An
 #+email: obluda2173@gmail.com
 #+date: <2025-12-20>
-#+lastmod: <2025-12-20 17:44>
+#+lastmod: <2025-12-22 15:00>
 #+options: num:t
 #+startup: overview
 
@@ -89,6 +89,8 @@ The parameters are updated using *Gradient Descent*:
 $$\theta_j := \theta_j - \alpha \frac{\partial}{\partial \theta_j} J(\theta_0, \theta_1)$$
 
 Where $\alpha$ is the learning rate.
+
+More detailed information on technical aspect of project can be found in [[file:./docs/theory.pdf][theory.pdf]].
 
 * 📂 Project Structure
 
