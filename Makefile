@@ -23,6 +23,7 @@ all: train predict metrics
 re: clean all
 
 setup:
+	@mkdir models
 	@$(JULIA) $(JFLAGS) -e 'using Pkg; Pkg.instantiate()'
 	@echo "$(GREEN)✔ Dependencies installed$(RESET)"
 
