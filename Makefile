@@ -23,21 +23,23 @@ all: train predict metrics
 re: clean all
 
 setup:
-	@mkdir models
+	@mkdir -p models
+	@[ -s ./models/thetas.csv ] || echo "theta_0,theta_1,mu,sigma\n0,0,0,1" > ./models/thetas.csv
 	@$(JULIA) $(JFLAGS) -e 'using Pkg; Pkg.instantiate()'
 	@echo "$(GREEN)✔ Dependencies installed$(RESET)"
 
-train:
+train: setup
 	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) train.jl
 	@echo "$(BLUE)✔ Model trained$(RESET)"
 
-predict:
+predict: setup
 	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) predict.jl
 
-metrics:
+metrics: setup
 	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) metrics.jl
 
-graph:
+graph: setup
+	@mkdir -p plots
 	@cd $(SRC_DIR) && $(JULIA) $(JFLAGS) plots.jl
 	@echo "$(BLUE)✔ Graph generated$(RESET)"
 
